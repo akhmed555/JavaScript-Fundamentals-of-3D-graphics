@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Sphere</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #2d3047;
+            position: relative;
+        }
+
+        .rect {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%; 
+            position: absolute;
+            transform: translate(-50%, -50%);
+            will-change: left, top, background-color, width, height;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    const FOV_FACTOR = 1200;
+    let camera_position = { x: 0, y: 0, z: -5 };
+
+    let sphere_points = [];
+    let angle = 0;
+
+    
+    function vec3RotateX(v, angle) {
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+        return {
+            x: v.x,
+            y: v.y * cosA - v.z * sinA,
+            z: v.y * sinA + v.z * cosA
+        };
+    }
+
+    
+    function vec3RotateY(v, angle) {
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+        return {
+            x: v.x * cosA + v.z * sinA,
+            y: v.y,
+            z: -v.x * sinA + v.z * cosA
+        };
+    }
+
+   
+    function project(point) {
+        const z = point.z - camera_position.z;
+        const scale = FOV_FACTOR / z;
+        return {
+            x: point.x * scale,
+            y: point.y * scale,
+            scale: scale 
+        };
+    }
+
+   
+    const R = 1.5;       
+    const STEP = 0.18;    
+
+    for (let phi = 0; phi <= Math.PI; phi += STEP) {
+        for (let theta = 0; theta <= Math.PI * 2; theta += STEP) {
+           
+            const x = R * Math.sin(phi) * Math.cos(theta);
+            const y = R * Math.sin(phi) * Math.sin(theta);
+            const z = R * Math.cos(phi);
+
+            sphere_points.push({ x, y, z });
+
+            
+            const rect = document.createElement('div');
+            rect.classList.add('rect');
+            document.body.append(rect);
+        }
+    }
+
+    const N_POINTS = sphere_points.length;
+    const rectElements = document.querySelectorAll('.rect');
+
+
+
+    // 
+    function animate() {
+        angle += 0.02;
+
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        for (let i = 0; i < N_POINTS; i++) {
+            let point = sphere_points[i];
+
+            
+            let rotated = vec3RotateX(point, angle);
+            rotated = vec3RotateY(rotated, angle * 0.7);
+
+            
+            let projected = project(rotated);
+
+           
+            const depth = (rotated.z + R) / (R * 2); 
+            const brightness = Math.floor(80 + depth * 175); 
+            const size = 2 + depth * 4; 
+
+            const el = rectElements[i];
+            el.style.left = (projected.x + centerX) + 'px';
+            el.style.top  = (projected.y + centerY) + 'px';
+            el.style.width  = size + 'px';
+            el.style.height = size + 'px';
+            el.style.backgroundColor = `rgb(${brightness}, ${Math.floor(brightness * 0.4)}, ${Math.floor(brightness * 0.3)})`;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+
+   
+</script>
+
+</body>
+</html>
