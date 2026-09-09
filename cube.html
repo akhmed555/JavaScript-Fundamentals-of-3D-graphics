@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D graphics</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+        
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            
+        }
+        
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #2d3047;
+            position: relative;
+        }
+        
+        .rect {
+            width: 7px;
+            height: 7px;
+            background-color: tomato;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            will-change: left, top;
+            
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        const N_POINTS = 9 * 9 * 9; 
+        const FOV_FACTOR = 1200; 
+        
+        let camera_position = {
+            x: 0,
+            y: 0,
+            z: -5
+        };
+        let cube_points = [];
+        let angle = 0; 
+        
+        function vec3RotateX(v, angle) {
+            const cosA = Math.cos(angle);
+            const sinA = Math.sin(angle);
+            return {
+                x: v.x,
+                y: v.y * cosA - v.z * sinA,
+                z: v.y * sinA + v.z * cosA
+            };
+        }
+        
+        function project(point) {
+           
+            
+            const z = point.z - camera_position.z;
+            
+            const scale = FOV_FACTOR / z;
+            return {
+                x: point.x * scale,
+                y: point.y * scale
+            };
+        }
+        
+        for (let x = -1; x <= 1; x += 0.25) {
+            for (let y = 1; y >= -1; y -= 0.25) { 
+                for (let z = -1; z <= 1; z += 0.25) {
+                    
+                    cube_points.push({
+                        x,
+                        y,
+                        z
+                    });
+                    
+                    const rect = document.createElement('div');
+                    rect.classList.add('rect');
+                    document.body.append(rect);
+                }
+            }
+        }
+        
+        const rectElements = document.querySelectorAll('.rect');
+        
+        function animate() {
+            
+            angle += 0.02;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            for (let i = 0; i < N_POINTS; i++) {
+                
+                let point = cube_points[i];
+                
+                let rotated_point = vec3RotateX(point, angle);
+                
+                let projected_point = project(rotated_point);
+                
+                rectElements[i].style.left = (projected_point.x + centerX) + 'px';
+                rectElements[i].style.top = (projected_point.y + centerY) + 'px';
+            }
+            
+            requestAnimationFrame(animate);
+        }
+       
+        animate();
+        window.onmousemove = function(e) {
+            let x = e.pageX;
+            let scale = x / 100;
+            camera_position.z = scale;
+        }
+    </script>
+</body>
+
+</html>
