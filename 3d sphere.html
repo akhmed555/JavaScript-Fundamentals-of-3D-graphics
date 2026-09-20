@@ -30,7 +30,7 @@
             border-radius: 50%; 
             position: absolute;
             transform: translate(-50%, -50%);
-            will-change: left, top, background-color, width, height;
+            
         }
     </style>
 </head>
@@ -77,8 +77,8 @@
     }
 
    
-    const R = 1.5;       
-    const STEP = 0.18;    
+    const R = 1.2;       
+    const STEP = 0.1;    
 
     for (let phi = 0; phi <= Math.PI; phi += STEP) {
         for (let theta = 0; theta <= Math.PI * 2; theta += STEP) {
